@@ -1,0 +1,22 @@
+package org.example;
+
+import java.awt.image.BufferedImage;
+
+public class MirrorEffect {
+
+    public static BufferedImage createMirroredImage(BufferedImage originalImage) {
+        int width = originalImage.getWidth();
+        int height = originalImage.getHeight();
+
+        BufferedImage mirroredImage = new BufferedImage(width, height, originalImage.getType());
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int rgb = originalImage.getRGB(x, y);
+                mirroredImage.setRGB(width - 1 - x, y, rgb);
+            }
+        }
+
+        return mirroredImage;
+    }
+}
