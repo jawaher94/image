@@ -1,0 +1,23 @@
+package org.example;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
+
+public class ImageEffects {
+
+    public static BufferedImage applyGrayscaleEffect(BufferedImage src) {
+        BufferedImage grayscaleImage = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < src.getHeight(); y++) {
+            for (int x = 0; x < src.getWidth(); x++) {
+                int rgba = src.getRGB(x, y);
+                Color col = new Color(rgba, true);
+                int gray = (int)(col.getRed() * 0.299 + col.getGreen() * 0.587 + col.getBlue() * 0.114);
+                Color newColor = new Color(gray, gray, gray, col.getAlpha());
+                grayscaleImage.setRGB(x, y, newColor.getRGB());
+            }
+        }
+        return grayscaleImage;
+    }
+
+
+}
