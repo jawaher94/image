@@ -1,0 +1,45 @@
+package org.example;
+import java.awt.image.BufferedImage;
+import java.util.Random;
+
+public class AddNoise {
+
+
+    public static BufferedImage addNoise(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        BufferedImage noisyImage = new BufferedImage(width, height, image.getType());
+        Random random = new Random();
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+
+                int pixel = image.getRGB(x, y);
+
+
+                int alpha = (pixel >> 24) & 0xff;
+                int red = (pixel >> 16) & 0xff;
+                int green = (pixel >> 8) & 0xff;
+                int blue = pixel & 0xff;
+
+                red = clamp(red + random.nextInt(91) - 50);
+                green = clamp(green + random.nextInt(91) - 50);
+                blue = clamp(blue + random.nextInt(91) - 50);
+
+
+                int noisyPixel = (alpha << 24) | (red << 16) | (green << 8) | blue;
+
+
+                noisyImage.setRGB(x, y, noisyPixel);
+            }
+        }
+
+        return noisyImage;
+    }
+
+
+    private static int clamp(int value) {
+        return Math.max(0, Math.min(value, 255));
+    }
+}
