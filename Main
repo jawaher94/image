@@ -1,0 +1,171 @@
+package org.example;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+
+public class Main extends JFrame {
+
+    private JLabel imageLabel;
+    private BufferedImage originalImage;
+    private BufferedImage displayedImage;
+
+    public Main() {
+        setTitle("Display Photo");
+        setSize(1000, 800);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        JButton openButton = new JButton("Open Photo");
+        openButton.addActionListener(e -> openImage());
+
+        imageLabel = new JLabel();
+        imageLabel.setHorizontalAlignment(JLabel.CENTER);
+        imageLabel.setVerticalAlignment(JLabel.CENTER);
+
+        imageLabel.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                if (originalImage != null && displayedImage != null) {
+                    int x = e.getX();
+                    updateImage(x);
+                }
+            }
+        });
+
+        setLayout(new BorderLayout());
+        add(openButton, BorderLayout.NORTH);
+        add(new JScrollPane(imageLabel), BorderLayout.CENTER);
+
+        JMenuBar menuBar = new JMenuBar();
+        JMenu effectsMenu = new JMenu("Effects");
+
+        for (int i = 1; i <= 10; i++) {
+            JMenuItem effectItem = new JMenuItem("Effect " + i);
+            int num = i;
+            effectItem.addActionListener(e -> applyEffect(num));
+            effectsMenu.add(effectItem);
+        }
+
+        menuBar.add(effectsMenu);
+        setJMenuBar(menuBar);
+    }
+
+    private void openImage() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Choose Photo");
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                if (f.isDirectory()) {
+                    return true;
+                }
+                String extension = getFileExtension(f);
+                return extension.equals("jpg") || extension.equals("jpeg") || extension.equals("png") || extension.equals("gif");
+            }
+
+            @Override
+            public String getDescription() {
+                return "Photo (JPG, JPEG, PNG, GIF)";
+            }
+
+            private String getFileExtension(File file) {
+                String name = file.getName();
+                int lastIndex = name.lastIndexOf('.');
+                return lastIndex == -1 ? "" : name.substring(lastIndex + 1).toLowerCase();
+            }
+        });
+
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            try {
+                originalImage = ImageIO.read(selectedFile);
+                displayedImage = originalImage;
+                ImageIcon icon = new ImageIcon(displayedImage);
+                imageLabel.setIcon(icon);
+                setTitle("Display Photo - " + selectedFile.getName());
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    private void applyEffect(int effectNumber) {
+        if (originalImage == null) {
+            JOptionPane.showMessageDialog(this, "Please open an image first.");
+            return;
+        }
+
+        switch (effectNumber) {
+            case 1:
+                displayedImage = ImageEffects.applyGrayscaleEffect(originalImage);
+                break;
+            case 2:
+                displayedImage = GrayscaleEffect.applyGrayscale(originalImage);
+                break;
+            case 3:
+                displayedImage = MirrorEffect.createMirroredImage(originalImage);
+                break;
+            case 4:
+                displayedImage = ImageDarkener.darkenImage(originalImage, 0.5f);
+                break;
+            case 5:
+                displayedImage = Vignette.applyVignette(originalImage);
+                break;
+            case 6:
+                displayedImage = ColorRemove.removeRed(originalImage);
+                break;
+            case 7:
+                displayedImage = ImagePixelator.pixelate(originalImage, 5);
+                break;
+            case 8:
+                displayedImage = Posterize.applyPosterizeEffect(originalImage, 4);
+                break;
+            case 9:
+                displayedImage = ShowBorders.showBorders(originalImage, 10);
+                break;
+            case 10:
+                displayedImage = AddNoise.addNoise(originalImage);
+                break;
+        }
+
+        imageLabel.setIcon(new ImageIcon(displayedImage));
+    }
+
+    private void updateImage(int mouseX) {
+        int width = originalImage.getWidth();
+        int height = originalImage.getHeight();
+        BufferedImage combinedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (x < mouseX) {
+                    combinedImage.setRGB(x, y, originalImage.getRGB(x, y));
+                } else {
+                    combinedImage.setRGB(x, y, displayedImage.getRGB(x, y));
+                }
+            }
+        }
+
+        imageLabel.setIcon(new ImageIcon(combinedImage));
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            Main mainFrame = new Main();
+            mainFrame.setVisible(true);
+        });
+    }
+}
+
+
+
+
+
+
